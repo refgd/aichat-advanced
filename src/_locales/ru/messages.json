@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "AIChat Advanced: AIChat с доступом в интернет"
+  },
+  "appDesc": {
+    "message": "Дополните запросы к AIChat подходящими результатами из сети Интернет."
+  }
+}

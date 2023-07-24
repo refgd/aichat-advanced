@@ -1,0 +1,8 @@
+{
+  "appName": {
+    "message": "AIChat Advanced: インターネットにアクセスできる AIChat"
+  },
+  "appDesc": {
+    "message": "Webから関連する結果を使用して、AIChatのプロンプトを拡張します。"
+  }
+}

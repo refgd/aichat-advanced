@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "AIChat Advanced"
+  },
+  "appDesc": {
+    "message": "AIChat Advanced"
+  },
+  "toggleExtActive": {
+    "message": "Toggle Extension Active"
+  }
+}

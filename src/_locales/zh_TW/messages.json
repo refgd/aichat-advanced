@@ -1,0 +1,8 @@
+{
+    "appName": {
+      "message": "AIChat Advanced：有網路存取功能的 AIChat"
+    },
+    "appDesc": {
+      "message": "使用來自網路的相關結果，增加 AIChat 的回答功能。"
+    }
+}

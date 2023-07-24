@@ -1,0 +1,11 @@
+{
+  "appName": {
+    "message": "AIChat Advanced: AIChat с достъп до интернет."
+  },
+  "appDesc": {
+    "message": "Аугментирай AIChat задания със релевантни резултати от интернет."
+  },
+  "toggleExtActive": {
+    "message": "Включете или изключете достъп до интернет."
+  }
+}
