@@ -107,10 +107,16 @@ export const getSavedPrompts = async (addDefaults = true) => {
 }
 
 function addDefaultPrompts(prompts: Prompt[]) {
+    addPrompt(prompts, {
+        name: 'Standard English',
+        text: "{query}\n\nPlease correct above statement to standard English.",
+        uuid: 'default_format_en'
+    })
 
     if (getLocaleLanguage() !== 'en') {
         addPrompt(prompts, getDefaultEnglishPrompt())
     }
+
     addPrompt(prompts, getDefaultPrompt())
     return prompts
 

@@ -144,34 +144,43 @@ function showErrorMessage(error: Error) {
 
 
 async function updateUI() {
-
     if (updatingUI) return
-
-    textarea = getTextArea()
-    toolbar = getAIChatToolbar()
-
-    if (!textarea) {
-        toolbar?.remove()
-        return
-    }
-
-    if (toolbar) return
-
     updatingUI = true
 
-    btnSubmit = getSubmitButton()
-    btnSubmit?.addEventListener("click", onSubmit, true)
+    if(!textarea || !textarea.parentNode){
+        if(textarea) textarea.removeEventListener("keydown", onSubmit, true);
 
-    textarea?.addEventListener("keydown", onSubmit, true)
+        textarea = getTextArea();
+        if (!textarea) {
+            toolbar?.remove()
+            return
+        }
 
-    await renderToolbar()
+        textarea?.removeEventListener("keydown", onSubmit, true);
+        textarea?.addEventListener("keydown", onSubmit, true)
+    }
 
-    renderSlashCommandsMenu()
+    if(!btnSubmit || !btnSubmit.parentNode){
+        if(btnSubmit) btnSubmit.removeEventListener("click", onSubmit, true);
 
-    aiChatFooter = getFooter()
-    if (aiChatFooter) {
-        const lastChild = aiChatFooter.lastElementChild as HTMLElement
-        if (lastChild) lastChild.style.padding = '0 0 0.5em 0'
+        btnSubmit = getSubmitButton()
+        
+        btnSubmit?.removeEventListener("click", onSubmit, true)
+        btnSubmit?.addEventListener("click", onSubmit, true)
+    }
+
+    if(!toolbar || !toolbar.parentNode){
+        toolbar = getAIChatToolbar()
+        if (!toolbar) {
+            await renderToolbar()
+            renderSlashCommandsMenu()
+        
+            aiChatFooter = getFooter()
+            if (aiChatFooter) {
+                const lastChild = aiChatFooter.lastElementChild as HTMLElement
+                if (lastChild) lastChild.style.padding = '0 0 0.5em 0'
+            }
+        }
     }
 
     updatingUI = false
@@ -209,7 +218,7 @@ const mutationObserver = new MutationObserver((mutations) => {
 
     // console.info("AIChat Advanced: Mutation observer triggered")
     
-    if (getAIChatToolbar()) return
+    // if (getAIChatToolbar()) return
 
     try {
         updateUI()
@@ -222,8 +231,8 @@ const mutationObserver = new MutationObserver((mutations) => {
 
 window.onload = function () {
     updateUI()
-
-    mutationObserver.observe(rootEl, { childList: true, subtree: true })
+    
+    if(rootEl) mutationObserver.observe(rootEl, { childList: true, subtree: true })
 }
 
 window.onunload = function () {
