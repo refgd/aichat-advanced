@@ -95,7 +95,14 @@ function SlashCommandsMenu(
     }
 
     function updateFilter(e: Event) {
-        const text = (e.target as HTMLTextAreaElement).value
+        const textarea = (e.target as HTMLTextAreaElement);
+        let text = '';
+        if(textarea.tagName == 'TEXTAREA'){
+            text = textarea.value;
+        }else{
+            text = textarea.innerText;
+        }
+
         if (text.startsWith('/')) {
             setFilter(text)
         } else {

@@ -1,5 +1,7 @@
 export function getTextArea(): HTMLTextAreaElement | null {
-    return document.querySelector('textarea')
+    let textarea = document.querySelector('textarea');
+    if(!textarea) textarea = document.querySelector('.textarea');
+    return textarea
 }
 
 export function getFooter(): HTMLDivElement | null {
@@ -21,9 +23,9 @@ export function getSubmitButton(): HTMLButtonElement | null | undefined {
     if (!textarea) {
         return null
     }
-    if (textarea.hasAttribute('matinput')) {
+    if (textarea.tagName !== 'TEXTAREA') {
         return textarea.parentNode?.parentNode?.parentNode?.parentNode?.parentNode?.querySelector(".send-button-container button")
     }else{
-        return textarea.parentNode?.querySelector(":scope > button")
+        return textarea.parentNode?.parentNode?.querySelector(":scope > button")
     }
 }

@@ -10,10 +10,10 @@ import createShadowRoot from 'src/util/createShadowRoot'
 import { compilePrompt, promptContainsWebResults } from 'src/util/promptManager'
 import SlashCommandsMenu, { slashCommands } from 'src/components/slashCommandsMenu'
 import { apiExtractText } from './api'
-import { useState } from 'preact/hooks'
 
 let isProcessing = false
 let updatingUI = false
+let hasError = false
 
 const rootEl = getRootElement()
 const uuid = {setValue: (uuid: string) => {}};
@@ -70,7 +70,11 @@ async function handleSubmit(query: string) {
     const userConfig = await getUserConfig()
 
     if (!userConfig.extActive) {
-        textarea.value = query
+        if(textarea.tagName !== 'TEXTAREA'){
+            textarea.innerText = query
+        }else{
+            textarea.value = query
+        }
         pressEnter()
         return
     }
@@ -78,7 +82,13 @@ async function handleSubmit(query: string) {
     try {
         const results = await processQuery(query, userConfig)
         const compiledPrompt = await compilePrompt(results, query)
-        textarea.value = compiledPrompt
+        
+        if(textarea.tagName !== 'TEXTAREA'){
+            textarea.innerText = compiledPrompt
+        }else{
+            textarea.value = compiledPrompt
+        }
+
         pressEnter()
     } catch (error) {
         if (error instanceof Error) {
@@ -97,14 +107,23 @@ async function onSubmit(event: MouseEvent | KeyboardEvent) {
     if (isKeyEvent && event.key === 'Enter' && event.isComposing) return
 
     if (!isProcessing && (event.type === "click" || (isKeyEvent && event.key === 'Enter'))) {
-        const query = textarea?.value.trim()
-
+        let query = null;
+        if(textarea.tagName !== 'TEXTAREA'){
+            query = textarea.innerText.trim()
+        }else{
+            query = textarea?.value.trim()
+        }
+        
         if (!query) return
 
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        textarea.value = ""
+        if(textarea.tagName !== 'TEXTAREA'){
+            textarea.innerText = ''
+        }else{
+            textarea.value = ''
+        }
 
         const isPartialCommand = slashCommands.some(command => command.name.startsWith(query) && query.length <= command.name.length)
         if (isPartialCommand) {
@@ -113,26 +132,36 @@ async function onSubmit(event: MouseEvent | KeyboardEvent) {
 
         isProcessing = true
         await handleSubmit(query)
-        isProcessing = false
+        setTimeout(() => {
+            isProcessing = false
+        }, 300);
         
         uuid.setValue('noprompt');
+
+        return
     }
 }
 
 function pressEnter() {
-    textarea?.focus()
-    const inputEvent = new KeyboardEvent('input', {
-        bubbles: true,
-        cancelable: true
-    })
-    textarea?.dispatchEvent(inputEvent)
-    const enterEvent = new KeyboardEvent('keydown', {
-        bubbles: true,
-        cancelable: true,
-        key: 'Enter',
-        code: 'Enter'
-    })
-    textarea?.dispatchEvent(enterEvent)
+    if(textarea?.tagName !== 'TEXTAREA'){
+        btnSubmit?.click()
+    }else{
+        textarea?.focus()
+    
+        const inputEvent = new KeyboardEvent('input', {
+            bubbles: true,
+            cancelable: true
+        })
+        textarea?.dispatchEvent(inputEvent)
+    
+        const enterEvent = new KeyboardEvent('keydown', {
+            bubbles: true,
+            cancelable: true,
+            key: 'Enter',
+            code: 'Enter'
+        })
+        textarea?.dispatchEvent(enterEvent)
+    }
 }
 
 function showErrorMessage(error: Error) {
@@ -144,10 +173,10 @@ function showErrorMessage(error: Error) {
 
 
 async function updateUI() {
-    if (updatingUI) return
+    if (updatingUI || hasError) return
     updatingUI = true
 
-    if(!textarea || !textarea.parentNode){
+    if(!textarea || !document.body.contains(textarea)){
         if(textarea) textarea.removeEventListener("keydown", onSubmit, true);
 
         textarea = getTextArea();
@@ -160,7 +189,7 @@ async function updateUI() {
         textarea?.addEventListener("keydown", onSubmit, true)
     }
 
-    if(!btnSubmit || !btnSubmit.parentNode){
+    if(!btnSubmit || !document.body.contains(btnSubmit)){
         if(btnSubmit) btnSubmit.removeEventListener("click", onSubmit, true);
 
         btnSubmit = getSubmitButton()
@@ -169,7 +198,7 @@ async function updateUI() {
         btnSubmit?.addEventListener("click", onSubmit, true)
     }
 
-    if(!toolbar || !toolbar.parentNode){
+    if(!toolbar || !document.body.contains(toolbar)){
         toolbar = getAIChatToolbar()
         if (!toolbar) {
             await renderToolbar()
@@ -192,12 +221,12 @@ async function renderToolbar() {
         const { shadowRootDiv, shadowRoot } = await createShadowRoot('content-scripts/mainUI.css')
         shadowRootDiv.classList.add('wcg-toolbar')
 
-        if (textarea?.hasAttribute('matinput')) {
-            const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement
+        if (textarea?.tagName !== 'TEXTAREA') {
+            const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement
             textareaParentParent?.classList.add('flex-col')
             textareaParentParent?.appendChild(shadowRootDiv)
         }else{
-            const textareaParentParent = textarea?.parentElement?.parentElement
+            const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement
             textareaParentParent?.classList.add('flex-col')
             textareaParentParent?.appendChild(shadowRootDiv)
         }
@@ -206,6 +235,7 @@ async function renderToolbar() {
 
     } catch (e) {
         if (e instanceof Error) {
+            hasError = true;
             showErrorMessage(Error(`Error loading AIChat Advanced toolbar: ${e.message}. Please reload the page (F5).`))
         }
     }

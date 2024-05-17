@@ -7,13 +7,13 @@ const manifest_version = Browser.runtime.getManifest().manifest_version
 
 function openChatGPTWebpage() {
     Browser.tabs.query({ currentWindow: true }).then((tabs) => {
-        const gptTab = tabs.find((tab) => tab.url && tab.id  && tab.url.startsWith("https://chat.openai.com/"));
+        const gptTab = tabs.find((tab) => tab.url && tab.id  && tab.url.startsWith("https://chatgpt.com/"));
         
         if(gptTab && gptTab.id){
             chrome.tabs.update(gptTab.id, { active: true });
         }else{
             Browser.tabs.create({
-                url: "https://chat.openai.com/?model=gpt-4",
+                url: "https://chatgpt.com",
             })
         }
     })
@@ -21,13 +21,13 @@ function openChatGPTWebpage() {
 
 function openBardWebpage() {
     Browser.tabs.query({ currentWindow: true }).then((tabs) => {
-        const gptTab = tabs.find((tab) => tab.url && tab.id  && tab.url.startsWith("https://bard.google.com/"));
+        const gptTab = tabs.find((tab) => tab.url && tab.id  && tab.url.startsWith("https://gemini.google.com/"));
         
         if(gptTab && gptTab.id){
             chrome.tabs.update(gptTab.id, { active: true });
         }else{
             Browser.tabs.create({
-                url: "https://bard.google.com",
+                url: "https://gemini.google.com",
             })
         }
     })
