@@ -75,7 +75,9 @@ async function handleSubmit(query: string) {
         }else{
             textarea.value = query
         }
-        pressEnter()
+        setTimeout(() => {
+            pressEnter()
+        }, 100);
         return
     }
 
@@ -84,12 +86,18 @@ async function handleSubmit(query: string) {
         const compiledPrompt = await compilePrompt(results, query)
         
         if(textarea.tagName !== 'TEXTAREA'){
-            textarea.innerText = compiledPrompt
+            if (textarea?.id === 'prompt-textarea') {
+                textarea.innerHTML = '<p>'+compiledPrompt.split("\n").join('</p><p>')+'</p>';
+            }else{
+                textarea.innerText = compiledPrompt
+            }
         }else{
             textarea.value = compiledPrompt
         }
 
-        pressEnter()
+        setTimeout(() => {
+            pressEnter()
+        }, 100);
     } catch (error) {
         if (error instanceof Error) {
             showErrorMessage(error)
@@ -105,7 +113,7 @@ async function onSubmit(event: MouseEvent | KeyboardEvent) {
     if (isKeyEvent && event.shiftKey && event.key === 'Enter') return
 
     if (isKeyEvent && event.key === 'Enter' && event.isComposing) return
-
+    
     if (!isProcessing && (event.type === "click" || (isKeyEvent && event.key === 'Enter'))) {
         let query = null;
         if(textarea.tagName !== 'TEXTAREA'){
@@ -132,9 +140,9 @@ async function onSubmit(event: MouseEvent | KeyboardEvent) {
 
         isProcessing = true
         await handleSubmit(query)
-        setTimeout(() => {
-            isProcessing = false
-        }, 300);
+        // setTimeout(() => {
+        //     isProcessing = false
+        // }, 500);
         
         uuid.setValue('noprompt');
 
@@ -143,25 +151,23 @@ async function onSubmit(event: MouseEvent | KeyboardEvent) {
 }
 
 function pressEnter() {
-    if(textarea?.tagName !== 'TEXTAREA'){
-        btnSubmit?.click()
-    }else{
-        textarea?.focus()
-    
-        const inputEvent = new KeyboardEvent('input', {
-            bubbles: true,
-            cancelable: true
-        })
-        textarea?.dispatchEvent(inputEvent)
-    
-        const enterEvent = new KeyboardEvent('keydown', {
-            bubbles: true,
-            cancelable: true,
-            key: 'Enter',
-            code: 'Enter'
-        })
-        textarea?.dispatchEvent(enterEvent)
-    }
+    textarea?.focus()
+
+    const inputEvent = new KeyboardEvent('input', {
+        bubbles: true,
+        cancelable: true
+    })
+    textarea?.dispatchEvent(inputEvent)
+
+    const enterEvent = new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'Enter',
+        code: 'Enter'
+    })
+    textarea?.dispatchEvent(enterEvent)
+
+    isProcessing = false
 }
 
 function showErrorMessage(error: Error) {
@@ -180,8 +186,11 @@ async function updateUI() {
         if(textarea) textarea.removeEventListener("keydown", onSubmit, true);
 
         textarea = getTextArea();
+
         if (!textarea) {
             toolbar?.remove()
+
+            updatingUI = false
             return
         }
 
@@ -221,12 +230,12 @@ async function renderToolbar() {
         const { shadowRootDiv, shadowRoot } = await createShadowRoot('content-scripts/mainUI.css')
         shadowRootDiv.classList.add('wcg-toolbar')
 
-        if (textarea?.tagName !== 'TEXTAREA') {
+        if (textarea?.id !== 'prompt-textarea') {
             const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement
             textareaParentParent?.classList.add('flex-col')
             textareaParentParent?.appendChild(shadowRootDiv)
         }else{
-            const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement
+            const textareaParentParent = textarea?.parentElement?.parentElement?.parentElement?.parentElement
             textareaParentParent?.classList.add('flex-col')
             textareaParentParent?.appendChild(shadowRootDiv)
         }
